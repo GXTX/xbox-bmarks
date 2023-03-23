@@ -28,6 +28,14 @@
 #include <time.h>
 #include <float.h>
 
+#ifdef NXDK
+#include <hal/debug.h>
+#include <hal/video.h>
+#include <hal/xbox.h>
+#include <windows.h>
+#define printf debugPrint
+#endif
+
 #define DP
 
 #ifdef SP
@@ -71,12 +79,20 @@ int main(void)
     long    arsize2d,nreps;
     size_t  malloc_arg,memreq;
 
+#ifdef NXDK
+	XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
+#endif
+
+#ifndef NXDK
     arsize_input = getenv("LINPACK_ARRAY_SIZE");
     if (arsize_input == NULL) {
         arsize = 200;
     } else {
         arsize = atoi(arsize_input);
     }
+#else
+    arsize = 200;
+#endif
 
         arsize/=2;
         arsize*=2;
@@ -98,13 +114,26 @@ int main(void)
         printf("Machine precision:  %d digits.\n",BASE10DIG);
         printf("Array size %d X %d.\n",arsize,arsize);
         printf("Average rolled and unrolled performance:\n\n");
+#ifndef NXDK
         printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS\n");
-        printf("----------------------------------------------------\n");
+        printf("----------------------------------------------------\n");    
+#else
+        printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS    CPU TEMP\n");
+        printf("--------------------------------------------------------------\n");
+#endif
         nreps=1;
+#ifndef NXDK
         while (linpack(nreps,arsize)<10.)
+#else
+        while (linpack(nreps,arsize)<80.)
+#endif
             nreps*=2;
         free(mempool);
         printf("\n");
+#ifdef NXDK
+    Sleep(10000);
+    return 0;
+#endif
 }
 
 
@@ -157,10 +186,35 @@ static REAL linpack(long nreps,int arsize)
         tdgesl=0.;
     if (toverhead<0.)
         toverhead=0.;
+#ifndef NXDK
     printf("%8ld %6.2f %6.2f%% %6.2f%% %6.2f%%  %9.3f\n",
             nreps,totalt,100.*tdgefa/totalt,
             100.*tdgesl/totalt,100.*toverhead/totalt,
             kflops);
+#else
+    ULONG temp;
+    HalReadSMBusValue(0x98, 1, FALSE, &temp);
+
+    unsigned long totalt_t = totalt * 100.0f;
+    unsigned long tdgefa_t = (100.0f * tdgefa / totalt) * 100.0f;
+    unsigned long tdgesl_t = (100.0f * tdgesl / totalt) * 100.0f;
+    unsigned long toverhead_t = (100.0f * toverhead / totalt) * 100.0f;
+    unsigned long long kflops_t = kflops * 1000.0f;
+    printf("%8ld  %02lu.%02lu  %02lu.%02lu%%  %02lu.%02lu%%  %02lu.%02lu%%  %9llu.%03llu  %lu\n", 
+        nreps,
+        totalt_t / 100,
+        totalt_t % 100,
+        tdgefa_t / 100,
+        tdgefa_t % 100,
+        tdgesl_t / 100,
+        tdgesl_t % 100,
+        toverhead_t / 100,
+        toverhead_t % 100,
+        kflops_t / 1000,
+        kflops_t % 1000,
+        temp
+    );
+#endif
     return(totalt);
     }
 

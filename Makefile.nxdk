@@ -1,0 +1,11 @@
+XBE_TITLE = linpack
+GEN_XISO  = $(XBE_TITLE).iso
+
+SRCS = $(CURDIR)/linpack.c
+
+NXDK_DIR = ../nxdk
+NXDK_SDL = y
+
+CFLAGS += -O3 -Wall -Wextra -pedantic
+
+include $(NXDK_DIR)/Makefile
