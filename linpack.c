@@ -36,7 +36,7 @@
 #define printf debugPrint
 #endif
 
-#define DP
+#define LDP
 
 #ifdef SP
 #define ZERO        0.0
@@ -53,7 +53,16 @@ typedef float   REAL;
 #define PREC        "Double"
 #define BASE10DIG   DBL_DIG
 
-typedef double  REAL;
+typedef double   REAL;
+#endif
+
+#ifdef LDP
+#define ZERO        0.0e0
+#define ONE         1.0e0
+#define PREC        "Extended"
+#define BASE10DIG   LDBL_DIG
+
+typedef long double REAL;
 #endif
 
 static REAL linpack  (long nreps,int arsize);
