@@ -28,6 +28,17 @@
 #include <time.h>
 #include <float.h>
 
+#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 0
+#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 1
+
+// Compile nanoprintf in this translation unit.
+#define NANOPRINTF_IMPLEMENTATION
+#include "nanoprintf.h"
+
 #ifdef NXDK
 #include <hal/debug.h>
 #include <hal/video.h>
@@ -204,25 +215,12 @@ static REAL linpack(long nreps,int arsize)
     ULONG temp;
     HalReadSMBusValue(0x98, 1, FALSE, &temp);
 
-    unsigned long totalt_t = totalt * 100.0f;
-    unsigned long tdgefa_t = (100.0f * tdgefa / totalt) * 100.0f;
-    unsigned long tdgesl_t = (100.0f * tdgesl / totalt) * 100.0f;
-    unsigned long toverhead_t = (100.0f * toverhead / totalt) * 100.0f;
-    unsigned long long kflops_t = kflops * 1000.0f;
-    printf("%8ld  %02lu.%02lu  %02lu.%02lu%%  %02lu.%02lu%%  %02lu.%02lu%%  %9llu.%03llu  %lu\n", 
-        nreps,
-        totalt_t / 100,
-        totalt_t % 100,
-        tdgefa_t / 100,
-        tdgefa_t % 100,
-        tdgesl_t / 100,
-        tdgesl_t % 100,
-        toverhead_t / 100,
-        toverhead_t % 100,
-        kflops_t / 1000,
-        kflops_t % 1000,
-        temp
-    );
+    char buf[255];
+    npf_snprintf(buf, sizeof(buf), "%8ld %6.2f %6.2f%% %6.2f%% %6.2f%%  %9.3f  %lu\n",
+        nreps,totalt,100.*tdgefa/totalt,
+        100.*tdgesl/totalt,100.*toverhead/totalt,
+        kflops, temp);
+    printf("%s", buf);
 #endif
     return(totalt);
     }
