@@ -151,6 +151,7 @@ int main(void)
         free(mempool);
         printf("\n");
 #ifdef NXDK
+    printf("Done.");
     Sleep(10000);
     return 0;
 #endif
