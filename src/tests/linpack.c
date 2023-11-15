@@ -22,11 +22,11 @@
 **
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "../tools/globals.h"
+
 #include <math.h>
-#include <time.h>
 #include <float.h>
+#include <time.h>
 
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
@@ -37,15 +37,10 @@
 
 // Compile nanoprintf in this translation unit.
 #define NANOPRINTF_IMPLEMENTATION
-#include "nanoprintf.h"
+#include "../nanoprintf/nanoprintf.h"
 
-#ifdef NXDK
-#include <hal/debug.h>
-#include <hal/video.h>
-#include <hal/xbox.h>
-#include <windows.h>
+// Some tests use printf
 #define printf debugPrint
-#endif
 
 #define LDP
 
@@ -92,69 +87,47 @@ static REAL second   (void);
 static void *mempool;
 
 
-int main(void)
+void runlinpack(char *)
 {
     char    *arsize_input;
     int     arsize;
     long    arsize2d,nreps;
     size_t  malloc_arg,memreq;
 
-#ifdef NXDK
-	XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
-#endif
-
-#ifndef NXDK
-    arsize_input = getenv("LINPACK_ARRAY_SIZE");
-    if (arsize_input == NULL) {
-        arsize = 200;
-    } else {
-        arsize = atoi(arsize_input);
-    }
-#else
     arsize = 200;
-#endif
 
-        arsize/=2;
-        arsize*=2;
-        if (arsize<10)
-            {
-            printf("Too small.\n");
-            return 1;
-            }
-        arsize2d = (long)arsize*(long)arsize;
-        memreq=arsize2d*sizeof(REAL)+(long)arsize*sizeof(REAL)+(long)arsize*sizeof(int);
-        printf("Memory required:  %ldK.\n",(memreq+512L)>>10);
-        malloc_arg=(size_t)memreq;
-        if (malloc_arg!=memreq || (mempool=malloc(malloc_arg))==NULL)
-            {
-            printf("Not enough memory available for given array size.\n\n");
-            return 2;
-            }
-        printf("\n\nLINPACK benchmark, %s precision.\n",PREC);
-        printf("Machine precision:  %d digits.\n",BASE10DIG);
-        printf("Array size %d X %d.\n",arsize,arsize);
-        printf("Average rolled and unrolled performance:\n\n");
-#ifndef NXDK
-        printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS\n");
-        printf("----------------------------------------------------\n");    
-#else
-        printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS    CPU TEMP\n");
-        printf("--------------------------------------------------------------\n");
-#endif
-        nreps=1;
-#ifndef NXDK
-        while (linpack(nreps,arsize)<10.)
-#else
-        while (linpack(nreps,arsize)<80.)
-#endif
-            nreps*=2;
-        free(mempool);
-        printf("\n");
-#ifdef NXDK
-    printf("Done.");
+    arsize/=2;
+    arsize*=2;
+    if (arsize<10)
+        {
+        printf("Too small.\n");
+        return;
+        }
+    arsize2d = (long)arsize*(long)arsize;
+    memreq=arsize2d*sizeof(REAL)+(long)arsize*sizeof(REAL)+(long)arsize*sizeof(int);
+    printf("Memory required:  %ldK.\n",(memreq+512L)>>10);
+    malloc_arg=(size_t)memreq;
+    if (malloc_arg!=memreq || (mempool=malloc(malloc_arg))==NULL)
+        {
+        printf("Not enough memory available for given array size.\n\n");
+        return;
+        }
+    printf("\n\nLINPACK benchmark, %s precision.\n",PREC);
+    printf("Machine precision:  %d digits.\n",BASE10DIG);
+    printf("Array size %d X %d.\n",arsize,arsize);
+    printf("Average rolled and unrolled performance:\n\n");
+    printf("    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS    CPU TEMP\n");
+    printf("--------------------------------------------------------------\n");
+    nreps=1;
+
+    while (linpack(nreps,arsize)<80.)
+        nreps*=2;
+
+    free(mempool);
+    printf("\n");
+    printf("Returning...\n");
     Sleep(10000);
-    return 0;
-#endif
+    return;
 }
 
 
@@ -207,14 +180,13 @@ static REAL linpack(long nreps,int arsize)
         tdgesl=0.;
     if (toverhead<0.)
         toverhead=0.;
-#ifndef NXDK
-    printf("%8ld %6.2f %6.2f%% %6.2f%% %6.2f%%  %9.3f\n",
-            nreps,totalt,100.*tdgefa/totalt,
-            100.*tdgesl/totalt,100.*toverhead/totalt,
-            kflops);
-#else
+
     ULONG temp;
-    HalReadSMBusValue(0x98, 1, FALSE, &temp);
+    NTSTATUS status = HalReadSMBusValue(0x98, 1, FALSE, &temp);
+    if (!NT_SUCCESS(status))
+    {
+        HalReadSMBusValue(0x20, 0x0A, FALSE, &temp);
+    }
 
     char buf[255];
     npf_snprintf(buf, sizeof(buf), "%8ld %6.2f %6.2f%% %6.2f%% %6.2f%%  %9.3f  %lu\n",
@@ -222,7 +194,7 @@ static REAL linpack(long nreps,int arsize)
         100.*tdgesl/totalt,100.*toverhead/totalt,
         kflops, temp);
     printf("%s", buf);
-#endif
+
     return(totalt);
     }
 

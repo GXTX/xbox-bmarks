@@ -1,4 +1,3 @@
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,5 +20,3 @@ int getpagesize();
 #ifdef __cplusplus
 };
 #endif
-
-

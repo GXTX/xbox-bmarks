@@ -5,7 +5,7 @@
 ;  ./test
 */
 
-#include "cpuidh.h"
+#include "cpuidc64.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -100,4 +100,3 @@ void end_time() {
     millisecs = (int) (1000.0 * secs);
     return;
 }
-

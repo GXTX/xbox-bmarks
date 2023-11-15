@@ -1,0 +1,18 @@
+XBE_TITLE = hardware\ test\ suites
+GEN_XISO = $(XBE_TITLE).iso
+SRCS = $(CURDIR)/src/tools/smallfuncs.c $(CURDIR)/main.c $(CURDIR)/src/tools/cpuidc64.c $(CURDIR)/src/tests/disk.c $(CURDIR)/src/tests/linpack.c $(CURDIR)/src/tests/memspeed.c $(CURDIR)/src/tools/xboxoverclock.c
+NXDK_DIR ?= $(CURDIR)/../..
+NXDK_SDL = y
+
+# https://github.com/XboxDev/nxdk/issues/624
+LTO = n
+
+CFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+CXXFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+
+NXDK_CFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+NXDK_CXXFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+
+NXDK_DISABLE_AUTOMOUNT_D = y
+
+include $(NXDK_DIR)/Makefile

@@ -12,8 +12,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cpuidh.h"
+#include "../tools/cpuidc64.h"
 #include <math.h>
+
+#define printf debugPrint
 
 #if defined(__MACH__)
 #include <stdlib.h>
@@ -59,15 +61,7 @@ void checkTime() {
     }
 }
 
-#ifdef NXDK
-#include <hal/debug.h>
-#include <hal/video.h>
-#include <hal/xbox.h>
-#include <windows.h>
-#define printf debugPrint
-#endif
-
-int main(int argc, char *argv[]) {
+int memspeed(char *) {
 
     int passes[25];
     int allocMem[25];
@@ -98,52 +92,10 @@ int main(int argc, char *argv[]) {
     double zerod = 0;
     double memMB;
 
-#ifndef NXDK
-    int runs = 12; // 8 MB;
-#else
-    XVideoSetMode(1280, 720, 32, REFRESH_DEFAULT);
     int runs = 14; // 32 MB;
-    
-    // Disable L2
-    __asm
-    {
-        push eax
-        push edx
-        push ecx
-        sfence
-        mov ecx, 0x11E // BBL_CR_CTL3
-        rdmsr
-        and eax, ~(1 << 8)
-        wrmsr
-        wbinvd
-        pop ecx
-        pop edx
-        pop eax
-    }
-#endif
+
     int param;
 
-#ifndef NXDK
-    if (argc >= 2) {
-        sscanf(argv[1], "%d", &runs);
-        if (runs == 0 || runs > 23) {
-            printf("Unsupported value for runs, it must be integer, from 1 to 22\n");
-            printf("Runs determine amount of memory used for benchmark, as power of 2\n");
-            printf(" Default: 12 = 8 MB\n");
-            exit(1);
-        }
-    }
-
-    if (argc >= 3) {
-        sscanf(argv[2], "%d", &param);
-        if (param > 0) {
-            if (param > 120) runs = 16;
-            if (param > 250) runs = 17;
-            if (param > 500) runs = 18;
-            if (param > 1000) runs = 19;
-        }
-    }
-#endif
     printf(" ##########################################\n");
 
 //    ramKB = ramGB * 1000000;
@@ -482,36 +434,12 @@ loop:
 //    goto loop;
     local_time();
     printf("\n                End of test %s\n", timeday);
-#ifdef NXDK
-    // Enable L2
-    __asm
-    {
-        push eax
-        push edx
-        push ecx
-        sfence
-        mov ecx, 0x11E // BBL_CR_CTL3
-        rdmsr
-        or eax, 1 << 8
-        wrmsr
-        sfence
-        wbinvd
-        pop ecx
-        pop edx
-        pop eax
-    }
-    Sleep(10000);
-#endif
 
     free(yd);
     free(xd);
 
-    char moredata[1024];
+    //char moredata[1024];
+    printf("Returning...\n");
+    Sleep(10000);
     return 0;
 }
-
-
-
-
- 
-
