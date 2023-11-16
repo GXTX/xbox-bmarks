@@ -38,7 +38,7 @@ static Menu menu = {
     {
         {"CPU SpeedTest (Linpack)", 0, runlinpack, NULL},
         {"Memory SpeedTest (anybench memoryspeed.c)", 0, memspeed, NULL},
-        {"HDD Read SpeedTest", 0, dorawread, "\\Device\\HardDisk0\\Partition0"},
+        {"HDD Read SpeedTest", 0, doswread, "\\Device\\HardDisk0\\Partition0"},
         {"DVD Read SpeedTest", 0, doswread, "\\Device\\CdRom0"},
         {"Overclock Utilities (Does not return)", 0, xboxoverclock, NULL},
         {"Set UDMA Mode", 0, toggleudmamode, NULL},
