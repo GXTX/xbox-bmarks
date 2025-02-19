@@ -14,6 +14,7 @@
 #include <string.h>
 #include "../tools/cpuidc64.h"
 #include <math.h>
+#include "../tools/globals.h"
 
 #define printf debugPrint
 
@@ -61,7 +62,7 @@ void checkTime() {
     }
 }
 
-int memspeed(char *) {
+void memspeed(char *) {
 
     int passes[25];
     int allocMem[25];
@@ -441,5 +442,4 @@ loop:
     //char moredata[1024];
     printf("Returning...\n");
     Sleep(10000);
-    return 0;
 }

@@ -19,12 +19,10 @@ void memspeed(char *);
 void xboxoverclock(char *);
 void shutdown(char *);
 
-typedef uintptr_t (*fnptr)(char *);
-
 typedef struct MenuItem {
     char *name;
     bool selected;
-    fnptr func;
+    void (*func)(char *);
     void *argument;
 } MenuItem;
 
