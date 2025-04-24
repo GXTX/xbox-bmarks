@@ -21,6 +21,15 @@
 #define BASE_CLOCK_INT 16667
 #define BASE_CLOCK_FLOAT 16.667f
 
+// See nouveau
+#define NV_PMC_ENABLE                0xFD000200
+#define NV_PBUS_DEBUG_1              0xFD001084
+#define NV_PRAMDAC_NVPLL_COEFF       0xFD680500
+#define NV_PRAMDAC_PLL_SETUP_CONTROL 0xFD680510
+#define NV_PRAMDAC_SEL_CLK           0xFD680524
+#define NV_PRAMDAC_GENERAL_CONTROL   0xFD680600
+
+
 ULONG original_fsb, wanted_fsb, hidden_fsb;
 ULONG original_nvclk, wanted_nvclk;
 int original_m, original_n, original_p, original_mp;
@@ -51,7 +60,7 @@ void calc_clock_params(int clk, int *n, int *m)
 ULONG get_GPU_frequency()
 {
     ULONG nvclk_reg, current_nvclk;
-    nvclk_reg = *((volatile ULONG *)0xFD680500);
+    nvclk_reg = *((volatile ULONG *)NV_PRAMDAC_NVPLL_COEFF);
 
     current_nvclk = BASE_CLOCK_INT * ((nvclk_reg & 0xFF00) >> 8);
     current_nvclk /= 1 << ((nvclk_reg & 0x70000) >> 16);
@@ -79,30 +88,46 @@ void outputClocks()
 
 static inline __attribute__((always_inline)) void writeCPUClocks(ULONG coeff)
 {
-	// wait and disable interrupts
 	KeEnterCriticalRegion();
-	KeStallExecutionProcessor(100000);
-	__asm__("cli\n\t"
-		"sfence\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-	);
 
-	HalReadWritePCISpace(0, 0x60, 0x6C, &coeff, sizeof(coeff), TRUE);
+    __asm
+    {
+		pushad
+		pushfd
 
-	// wait and enable interrupts
-	__asm__("nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"nop\n\t"
-		"sfence\n\t"
-		"sti\n\t"
-	);
-	KeStallExecutionProcessor(100000);
+		cli
+		sfence
+
+		// We just want to give the CPU time to settle down, probably doesn't need to be this much
+		mov eax, (__UINT32_MAX__ / 16)
+		test eax, eax
+LOOP:
+		nop
+		dec eax
+		jnz LOOP
+
+		mov dx, 0xCF8
+		mov eax, 0x8000036C
+		out dx, eax
+
+		mov dx, 0xCFC
+		mov eax, coeff
+		out dx, eax
+
+		mov eax, (__UINT32_MAX__ / 16)
+		test eax, eax
+LOOP2:
+		nop
+		dec eax
+		jnz LOOP2
+
+		sfence
+		sti
+
+		popfd
+		popad
+    }
+
 	KeLeaveCriticalRegion();
 }
 
@@ -163,11 +188,18 @@ void xboxoverclock(char *)
 						debugClearScreen();
 						debugPrint("Setting NVCLK to: %03dMHz\n", (BASE_CLOCK_INT * n / m) / 2 / 1000);
 
-						coeff = (*((volatile ULONG *)0xFD680500) & ~0x0000FFFF) | (n << 8) | m;
+						coeff = (*((volatile ULONG *)NV_PRAMDAC_NVPLL_COEFF) & ~0x0000FFFF) | (n << 8) | m;
 
-						Sleep(500);
-						*((volatile ULONG *)0xFD680500) = coeff;
-						Sleep(500);
+						// Stop the clocks...
+						*((volatile ULONG *)NV_PMC_ENABLE) = 0;
+						*((volatile ULONG *)NV_PBUS_DEBUG_1) |= 0xC000000;
+						*((volatile ULONG *)NV_PRAMDAC_PLL_SETUP_CONTROL) = 0x0F;
+
+						// Twiddle some registers to make +300MHz stable on all revs 
+						*((volatile ULONG *)NV_PRAMDAC_SEL_CLK) |= 0x85;
+						*((volatile ULONG *)NV_PRAMDAC_GENERAL_CONTROL) |= 0x20000000;
+
+						*((volatile ULONG *)NV_PRAMDAC_NVPLL_COEFF) = coeff;
 					}
 
 					// If we're overclocking we need to make sure we write this first
