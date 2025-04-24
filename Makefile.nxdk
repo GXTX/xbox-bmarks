@@ -4,14 +4,13 @@ SRCS = $(CURDIR)/src/tools/smallfuncs.c $(CURDIR)/main.c $(CURDIR)/src/tools/cpu
 NXDK_DIR ?= $(CURDIR)/../..
 NXDK_SDL = y
 
-# https://github.com/XboxDev/nxdk/issues/624
-LTO = n
+LTO = y
 
-CFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
-CXXFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
 
-NXDK_CFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
-NXDK_CXXFLAGS += -O2 -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+NXDK_CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+NXDK_CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
 
 NXDK_DISABLE_AUTOMOUNT_D = y
 
