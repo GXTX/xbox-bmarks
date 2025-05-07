@@ -190,11 +190,12 @@ void xboxoverclock(char *)
 
 						coeff = (*((volatile ULONG *)NV_PRAMDAC_NVPLL_COEFF) & ~0x0000FFFF) | (n << 8) | m;
 
+#if 0
 						// Stop the clocks...
 						*((volatile ULONG *)NV_PMC_ENABLE) = 0;
 						*((volatile ULONG *)NV_PBUS_DEBUG_1) |= 0xC000000;
 						*((volatile ULONG *)NV_PRAMDAC_PLL_SETUP_CONTROL) = 0x0F;
-
+#endif
 						// Twiddle some registers to make +300MHz stable on all revs 
 						*((volatile ULONG *)NV_PRAMDAC_SEL_CLK) |= 0x85;
 						*((volatile ULONG *)NV_PRAMDAC_GENERAL_CONTROL) |= 0x20000000;
