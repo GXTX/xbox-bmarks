@@ -1,16 +1,18 @@
 XBE_TITLE = hardware\ test\ suites
 GEN_XISO = $(XBE_TITLE).iso
-SRCS = $(CURDIR)/src/tools/smallfuncs.c $(CURDIR)/main.c $(CURDIR)/src/tools/cpuidc64.c $(CURDIR)/src/tests/disk.c $(CURDIR)/src/tests/linpack.c $(CURDIR)/src/tests/memspeed.c $(CURDIR)/src/tools/xboxoverclock.c
+SRCS = $(CURDIR)/src/tools/smallfuncs.c $(CURDIR)/main.c $(CURDIR)/src/tools/cpuidc64.c $(CURDIR)/src/tests/disk.c $(CURDIR)/src/tests/linpack.c $(CURDIR)/src/tests/memspeed.c $(CURDIR)/src/tools/xboxoverclock.c $(CURDIR)/src/tools/displaypatterns.c
 NXDK_DIR ?= $(CURDIR)/../..
 NXDK_SDL = y
 
 LTO = y
 
-CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
-CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+# nxdk-pdclib/pull/60 -DDEBUG_CONSOLE
 
-NXDK_CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
-NXDK_CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+CFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
+CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
+
+NXDK_CFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
+NXDK_CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
 
 NXDK_DISABLE_AUTOMOUNT_D = y
 

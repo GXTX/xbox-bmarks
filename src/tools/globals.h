@@ -5,8 +5,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <SDL.h>
+#include <intrin.h>
 
 #pragma once
+
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
 
 bool initsdl();
 void togglel2cache(char *);
@@ -18,6 +22,7 @@ void runlinpack(char *);
 void memspeed(char *);
 void xboxoverclock(char *);
 void shutdown(char *);
+void displaypatterns(char *);
 
 typedef struct MenuItem {
     char *name;
@@ -27,7 +32,7 @@ typedef struct MenuItem {
 } MenuItem;
 
 // Must match total items...
-#define MAX_MENU_ITEMS 8
+#define MAX_MENU_ITEMS 9
 typedef struct Menu {
     MenuItem item[MAX_MENU_ITEMS];
 } Menu;
@@ -41,6 +46,7 @@ static Menu menu = {
         {"Overclock Utilities (Does not return)", 0, xboxoverclock, NULL},
         {"Set UDMA Mode", 0, toggleudmamode, NULL},
         {"Set DVD Spindle Speed", 0, setspindlespeed, NULL},
+        {"Display Patterns", 0, displaypatterns, NULL},
         //{"Toggle L2 Cache", 0, togglel2cache, NULL}, // FIXME: Broken on hardware?
         {"Exit...", 0, shutdown, NULL}
     }
