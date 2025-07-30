@@ -64,16 +64,16 @@ void GenerateColorSteps()
                 // We're in between both the margins
                 if (y >= yMargin && y <= yFrame - yMargin + 1) {
                     if (barIndex == 0) {
-                        pixels[(y * xFrame + x)] = SDL_MapRGB(format,  color, 0, 0);
+                        pixels[(y * xFrame + x)] = SDL_MapRGB(format, color, 0, 0);
                     }
                     else if (barIndex == 1) {
-                        pixels[(y * xFrame + x)] = SDL_MapRGB(format,  0, color, 0);
+                        pixels[(y * xFrame + x)] = SDL_MapRGB(format, 0, color, 0);
                     }
                     else if (barIndex == 2) {
-                        pixels[(y * xFrame + x)] = SDL_MapRGB(format,  0, 0, color);
+                        pixels[(y * xFrame + x)] = SDL_MapRGB(format, 0, 0, color);
                     }
                     else if (barIndex == 3) {
-                        pixels[(y * xFrame + x)] = SDL_MapRGB(format,  color, color, color);
+                        pixels[(y * xFrame + x)] = SDL_MapRGB(format, color, color, color);
                     }
 
                     // Draw the inner box
@@ -147,45 +147,48 @@ void GenerateAlertnatingPixels()
 }
 
 static size_t currentLine = 0;
+static SDL_Surface *hLine = NULL;
 void GenerateHorizontalLineScroll()
 {
+    if (hLine == NULL) {
+        hLine = SDL_CreateRGBSurface(0, 1, screenSurface->h, 32, 0,0,0,0);
+        SDL_FillRect(hLine, NULL, 0xFFFFFF);
+    }
+
     SDL_PixelFormat *format = screenSurface->format;
 
     if (currentLine > screenSurface->w - 1)
         currentLine = 0;
 
-    SDL_Surface *line = SDL_CreateRGBSurface(0, 1, screenSurface->h, 32, 0,0,0,0);
-    SDL_FillRect(line, NULL, 0xFFFFFF);
-
     const SDL_Rect xy = {
         currentLine, 0,
         0, 0
     };
-    SDL_BlitSurface(line, NULL, screenSurface, &xy);
-    SDL_FreeSurface(line);
+    SDL_BlitSurface(hLine, NULL, screenSurface, &xy);
 
     currentLine++;
 }
 
+static SDL_Surface *vLine = NULL;
 void GenerateVerticalLineScroll()
 {
+    if (vLine == NULL) {
+        vLine = SDL_CreateRGBSurface(0, screenSurface->w, 1, 32, 0,0,0,0);
+        SDL_FillRect(vLine, NULL, 0xFFFFFF);
+    }
+
     SDL_PixelFormat *format = screenSurface->format;
 
     if (currentLine > screenSurface->h - 1)
         currentLine = 0;
 
-    SDL_Surface *line = SDL_CreateRGBSurface(0, screenSurface->w, 1, 32, 0,0,0,0);
-    SDL_FillRect(line, NULL, 0xFFFFFF);
-
     const SDL_Rect xy = {
         0, currentLine,
         0, 0
     };
-    SDL_BlitSurface(line, NULL, screenSurface, &xy);
-    SDL_FreeSurface(line);
+    SDL_BlitSurface(vLine, NULL, screenSurface, &xy);
 
     currentLine++;
-
 }
 
 #define MAX_PATTERNS 6
@@ -238,13 +241,15 @@ void displaypatterns(char *)
 
         SDL_FillRect(screenSurface, NULL, 0);
         patterns.item[position].func(patterns.item[position].argument);
+        XVideoWaitForVBlank();
         SDL_UpdateWindowSurface(window);
-
+#if 0
         XVideoWaitForVBlank();
         debugResetCursor();
         debugPrint("%lu\n", counter++);
         for (int i = 0; i < MAX_PATTERNS; i++) {
             debugPrint("%s %s\n", patterns.item[i].selected ? "->" :"  ", patterns.item[i].name);
         }
+#endif
     }
 }

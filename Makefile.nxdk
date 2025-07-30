@@ -6,13 +6,11 @@ NXDK_SDL = y
 
 LTO = y
 
-# nxdk-pdclib/pull/60 -DDEBUG_CONSOLE
+CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
 
-CFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
-CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
-
-NXDK_CFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
-NXDK_CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -Wall -Wextra -pedantic
+NXDK_CFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
+NXDK_CXXFLAGS += -O3 -mfpmath=sse -DNDEBUG -DDEBUG_CONSOLE -Wall -Wextra -pedantic
 
 NXDK_DISABLE_AUTOMOUNT_D = y
 
